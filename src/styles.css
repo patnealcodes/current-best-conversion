@@ -210,6 +210,15 @@ button.name-cell:hover span {
   color: var(--muted);
 }
 
+.cat {
+  color: var(--muted);
+  font-size: 11px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 1px 5px;
+  white-space: nowrap;
+}
+
 /* ---- target view ---- */
 .target-summary {
   display: flex;

@@ -39,6 +39,12 @@ export default function App() {
           {new Date(result.fetchedAt).toLocaleTimeString()}.
         </div>
       )}
+      {result && result.failedTypes.length > 0 && (
+        <div className="notice warn">
+          Some categories failed to load and are missing below:{' '}
+          {result.failedTypes.join(', ')}.
+        </div>
+      )}
 
       {market &&
         (target ? (

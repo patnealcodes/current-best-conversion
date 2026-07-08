@@ -4,6 +4,8 @@ export interface ItemMeta {
   image: string
   category: string
   detailsId: string
+  /** Which exchange type endpoint this item came from (added during merge). */
+  sourceType?: string
 }
 
 export interface Sparkline {

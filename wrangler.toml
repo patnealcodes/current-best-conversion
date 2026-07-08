@@ -12,7 +12,16 @@ binding = "ASSETS"
 # from the static assets with no Worker execution.
 run_worker_first = ["/poe-api/*", "/poe-img/*"]
 
+# Cross-user cache for poe.ninja responses (see worker/proxy.ts). This is the
+# SAME namespace poe2-runeshape-rewards binds, so both apps share one central
+# cache — identical upstream requests hit the same `ninja:` keys.
+[[kv_namespaces]]
+binding = "POE_NINJA_CACHE"
+id = "0acd0213b42c4bfea7dee56c1ea3e035"
+preview_id = "08ed861917c740969386edac45aaaf94"
+
 [vars]
-# Edge-cache lifetime for proxied poe.ninja API responses (minutes).
-# Keep aligned with VITE_CACHE_TTL_MINUTES (the browser-side cache) in .env.
-CACHE_TTL_MINUTES = "5"
+# Staleness window for the poe.ninja KV cache, in seconds. Mirrors
+# POE_NINJA_CACHE_TTL_SECONDS in poe2-runeshape-rewards — keep them aligned so
+# the shared entries have one consistent freshness policy.
+POE_NINJA_CACHE_TTL_SECONDS = "7200"

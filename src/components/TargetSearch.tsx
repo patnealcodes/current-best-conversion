@@ -96,6 +96,9 @@ export function TargetSearch({
             >
               <CurrencyIcon market={market} id={e.meta.id} size={24} />
               <span>{e.meta.name}</span>
+              {e.meta.sourceType && e.meta.sourceType !== 'Currency' && (
+                <span className="cat">{e.meta.sourceType}</span>
+              )}
             </li>
           ))}
         </ul>

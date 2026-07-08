@@ -12,6 +12,13 @@
       "runtimeExecutable": "npx",
       "runtimeArgs": ["wrangler", "dev", "--port", "8788"],
       "port": 8788
+    },
+    {
+      "name": "cf-worker-alt",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["wrangler", "dev", "--port", "8791"],
+      "port": 8791,
+      "autoPort": false
     }
   ]
 }

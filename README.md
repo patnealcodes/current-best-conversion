@@ -26,9 +26,11 @@ npm run preview  # serve the production bundle (proxy included)
 
 Values are baked in at dev/build time (standard Vite behavior).
 
-The Worker that proxies poe.ninja has its own edge-cache TTL,
-`CACHE_TTL_MINUTES` in [wrangler.toml](wrangler.toml) — keep it aligned with
-`VITE_CACHE_TTL_MINUTES`.
+The Worker that proxies poe.ninja caches responses in a Workers KV namespace
+shared with `poe2-runeshape-rewards`; its staleness window is
+`POE_NINJA_CACHE_TTL_SECONDS` in [wrangler.toml](wrangler.toml) — keep it
+aligned with the same var in that project so the shared cache has one
+consistent freshness policy.
 
 ## Deploying (Cloudflare Workers)
 
@@ -58,17 +60,25 @@ npx wrangler tail               # live logs from the Worker
 ## How it works
 
 - Data comes from poe.ninja's exchange overview endpoint
-  (`/poe2/api/economy/exchange/current/overview`). The response is cached in
-  `localStorage` for the configured TTL; if poe.ninja is unreachable the app
-  falls back to the stale cache and shows a warning. "Refresh now" bypasses
-  the cache.
+  (`/poe2/api/economy/exchange/current/overview`), fetched once per category
+  (Currency, Ritual, SoulCores, Idols, Runes, Expedition, LineageSupportGems,
+  Abyss, Fragments, Delirium, Breach, Verisium) and merged into one market.
+  The merged result is cached in `localStorage` for the configured TTL; if
+  poe.ninja is unreachable the app falls back to the stale cache and shows a
+  warning. Categories that fail individually are skipped with a notice —
+  Currency is required since it provides the comparison rates. "Refresh now"
+  bypasses the cache.
 - poe.ninja sends no CORS headers, so the app requests `/poe-api/*` and the
   Vite dev/preview server proxies it (see `vite.config.ts`). Item icons are
   proxied the same way via `/poe-img/*` to GGG's CDN (`web.poecdn.com`).
   In production the same two routes are handled by a Cloudflare Worker
-  (see `worker/`), which additionally caches responses on Cloudflare's edge
-  — poe.ninja is hit at most once per TTL per colo, no matter how many
-  visitors the site has.
+  (see `worker/`). API responses are cached in a cross-user Workers KV
+  namespace **shared with `poe2-runeshape-rewards`** (same namespace id, same
+  `ninja:${path}${search}` keys) with stale-while-revalidate: fresh entries
+  are served from KV, stale ones are served immediately while a background
+  refresh runs. Whichever app fetches a league/type first warms the cache for
+  both, and poe.ninja is hit at most once per staleness window per URL.
+  Item icons use a plain per-colo edge cache (1 day) — no KV.
 - The API provides one mid value per currency (in Divine Orbs), so buy/sell
   rates are reciprocals of each other unless the exact pair is a currency's
   most-traded pairing, in which case the real market rate from the API is

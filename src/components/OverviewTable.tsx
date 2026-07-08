@@ -37,6 +37,9 @@ export function OverviewTable({
                 <button className="name-cell" onClick={() => onPick(meta.id)} title="Set as target">
                   <CurrencyIcon market={market} id={meta.id} size={28} />
                   <span>{meta.name}</span>
+                  {meta.sourceType && meta.sourceType !== 'Currency' && (
+                    <span className="cat">{meta.sourceType}</span>
+                  )}
                 </button>
               </td>
               <td>{value ? <Ratio market={market} {...value} /> : <span className="muted">—</span>}</td>
