@@ -26,30 +26,33 @@ npm run preview  # serve the production bundle (proxy included)
 
 Values are baked in at dev/build time (standard Vite behavior).
 
-The Pages Function that proxies poe.ninja has its own edge-cache TTL,
+The Worker that proxies poe.ninja has its own edge-cache TTL,
 `CACHE_TTL_MINUTES` in [wrangler.toml](wrangler.toml) — keep it aligned with
 `VITE_CACHE_TTL_MINUTES`.
 
-## Deploying (Cloudflare Pages)
+## Deploying (Cloudflare Workers)
 
-The Pages project `current-best-conversion` is connected to this GitHub repo,
-so **pushing to the production branch deploys automatically**. Cloudflare
-reads `wrangler.toml` (project name, `dist` output, function vars) and picks
-up the `functions/` directory for the `/poe-api/*` and `/poe-img/*` proxies.
+The Worker `current-best-conversion` is connected to this GitHub repo via
+Workers Builds, so **pushing to the production branch deploys automatically**.
+The build runs the configured build command and then `npx wrangler deploy`,
+which reads `wrangler.toml`: the Worker script (`worker/index.ts`) handles
+`/poe-api/*` and `/poe-img/*`, and everything else is served directly from
+the static assets in `dist` (no Worker invocation, thanks to
+`run_worker_first` scoping).
 
-In the Pages dashboard, Settings → Build, set:
+In the Worker's dashboard, Settings → Build configuration, set:
 
 - Build command: `npm run build`
-- Build output directory: `dist` (must match `pages_build_output_dir`)
+- Deploy command: `npx wrangler deploy` (the default)
 
 Useful wrangler commands (all read wrangler.toml; `npx wrangler login` once):
 
 ```sh
-npm run cf:preview          # build + serve dist/ AND functions locally on :8788
-npm run cf:deploy           # build + direct upload, bypassing GitHub CI
-npm run cf:typecheck        # typecheck the Pages Functions
-npx wrangler pages deployment list   # recent deployments
-npx wrangler pages deployment tail   # live logs from the functions
+npm run cf:preview       # build + run the Worker with assets locally on :8788
+npm run cf:deploy        # build + deploy directly, bypassing GitHub CI
+npm run cf:typecheck     # typecheck the Worker
+npx wrangler deployments list   # recent deployments
+npx wrangler tail               # live logs from the Worker
 ```
 
 ## How it works
@@ -62,8 +65,8 @@ npx wrangler pages deployment tail   # live logs from the functions
 - poe.ninja sends no CORS headers, so the app requests `/poe-api/*` and the
   Vite dev/preview server proxies it (see `vite.config.ts`). Item icons are
   proxied the same way via `/poe-img/*` to GGG's CDN (`web.poecdn.com`).
-  In production the same two routes are served by Cloudflare Pages Functions
-  (see `functions/`), which additionally cache responses on Cloudflare's edge
+  In production the same two routes are handled by a Cloudflare Worker
+  (see `worker/`), which additionally caches responses on Cloudflare's edge
   — poe.ninja is hit at most once per TTL per colo, no matter how many
   visitors the site has.
 - The API provides one mid value per currency (in Divine Orbs), so buy/sell

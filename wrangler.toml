@@ -1,8 +1,16 @@
-# Cloudflare Pages configuration — picked up by the GitHub-connected build
-# and by local `wrangler pages dev` / `wrangler pages deploy`.
+# Cloudflare Workers configuration — used by the GitHub-connected Workers
+# build (`npx wrangler deploy`) and by local `wrangler dev`.
+# The name must match the Worker that Cloudflare created for this repo.
 name = "current-best-conversion"
+main = "worker/index.ts"
 compatibility_date = "2026-06-01"
-pages_build_output_dir = "dist"
+
+[assets]
+directory = "dist"
+binding = "ASSETS"
+# Only these routes invoke the Worker; everything else is served directly
+# from the static assets with no Worker execution.
+run_worker_first = ["/poe-api/*", "/poe-img/*"]
 
 [vars]
 # Edge-cache lifetime for proxied poe.ninja API responses (minutes).

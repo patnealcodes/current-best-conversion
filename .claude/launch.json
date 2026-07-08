@@ -8,9 +8,9 @@
       "port": 5173
     },
     {
-      "name": "cf-pages",
+      "name": "cf-worker",
       "runtimeExecutable": "npx",
-      "runtimeArgs": ["wrangler", "pages", "dev", "--port", "8788"],
+      "runtimeArgs": ["wrangler", "dev", "--port", "8788"],
       "port": 8788
     }
   ]

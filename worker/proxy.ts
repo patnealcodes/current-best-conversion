@@ -1,4 +1,5 @@
 export interface Env {
+  ASSETS: Fetcher
   /** Edge-cache lifetime for poe.ninja API responses, in minutes. */
   CACHE_TTL_MINUTES?: string
 }
@@ -21,7 +22,7 @@ export async function proxy(
   const upstream = upstreamOrigin + url.pathname.slice(prefix.length) + url.search
   const res = await fetch(upstream, {
     headers: {
-      'User-Agent': 'current-best-conversion (Cloudflare Pages; contact: hi@patneal.codes)',
+      'User-Agent': 'current-best-conversion (Cloudflare Workers; contact: hi@patneal.codes)',
       Accept: request.headers.get('Accept') ?? '*/*',
       'Accept-Encoding': 'gzip',
     },
