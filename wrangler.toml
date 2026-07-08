@@ -1,0 +1,10 @@
+# Cloudflare Pages configuration — picked up by the GitHub-connected build
+# and by local `wrangler pages dev` / `wrangler pages deploy`.
+name = "current-best-conversion"
+compatibility_date = "2026-06-01"
+pages_build_output_dir = "dist"
+
+[vars]
+# Edge-cache lifetime for proxied poe.ninja API responses (minutes).
+# Keep aligned with VITE_CACHE_TTL_MINUTES (the browser-side cache) in .env.
+CACHE_TTL_MINUTES = "5"

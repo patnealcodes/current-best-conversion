@@ -26,6 +26,32 @@ npm run preview  # serve the production bundle (proxy included)
 
 Values are baked in at dev/build time (standard Vite behavior).
 
+The Pages Function that proxies poe.ninja has its own edge-cache TTL,
+`CACHE_TTL_MINUTES` in [wrangler.toml](wrangler.toml) — keep it aligned with
+`VITE_CACHE_TTL_MINUTES`.
+
+## Deploying (Cloudflare Pages)
+
+The Pages project `current-best-conversion` is connected to this GitHub repo,
+so **pushing to the production branch deploys automatically**. Cloudflare
+reads `wrangler.toml` (project name, `dist` output, function vars) and picks
+up the `functions/` directory for the `/poe-api/*` and `/poe-img/*` proxies.
+
+In the Pages dashboard, Settings → Build, set:
+
+- Build command: `npm run build`
+- Build output directory: `dist` (must match `pages_build_output_dir`)
+
+Useful wrangler commands (all read wrangler.toml; `npx wrangler login` once):
+
+```sh
+npm run cf:preview          # build + serve dist/ AND functions locally on :8788
+npm run cf:deploy           # build + direct upload, bypassing GitHub CI
+npm run cf:typecheck        # typecheck the Pages Functions
+npx wrangler pages deployment list   # recent deployments
+npx wrangler pages deployment tail   # live logs from the functions
+```
+
 ## How it works
 
 - Data comes from poe.ninja's exchange overview endpoint
@@ -36,8 +62,10 @@ Values are baked in at dev/build time (standard Vite behavior).
 - poe.ninja sends no CORS headers, so the app requests `/poe-api/*` and the
   Vite dev/preview server proxies it (see `vite.config.ts`). Item icons are
   proxied the same way via `/poe-img/*` to GGG's CDN (`web.poecdn.com`).
-  **If you deploy `dist/` to a static host, replicate those two rewrites**
-  (nginx `location`, Netlify `_redirects`, etc.).
+  In production the same two routes are served by Cloudflare Pages Functions
+  (see `functions/`), which additionally cache responses on Cloudflare's edge
+  — poe.ninja is hit at most once per TTL per colo, no matter how many
+  visitors the site has.
 - The API provides one mid value per currency (in Divine Orbs), so buy/sell
   rates are reciprocals of each other unless the exact pair is a currency's
   most-traded pairing, in which case the real market rate from the API is

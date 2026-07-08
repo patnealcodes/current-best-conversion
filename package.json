@@ -6,13 +6,18 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "cf:typecheck": "tsc --noEmit -p functions/tsconfig.json",
+    "cf:preview": "npm run build && wrangler pages dev --port 8788",
+    "cf:deploy": "npm run build && wrangler pages deploy"
   },
   "dependencies": {
     "react": "^19.1.0",
     "react-dom": "^19.1.0"
   },
   "devDependencies": {
+    "@cloudflare/workers-types": "^5.0.0",
+    "wrangler": "^4.0.0",
     "@types/react": "^19.1.0",
     "@types/react-dom": "^19.1.0",
     "@vitejs/plugin-react": "^4.5.0",
